@@ -1,5 +1,9 @@
 {
-  "name": "pixel-to-object-3d-printing",
+  "name": "3d-printing",
   "compatibility_date": "2026-09-07",
-  "pages_build_output_dir": "./dist"
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS"
+  }
 }
+
