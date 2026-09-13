@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Box, Layers, Cpu, ShieldCheck, Menu, X, ArrowRight, Activity } from 'lucide-react';
 
 interface NavbarProps {
@@ -10,34 +10,85 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenQuoteModal }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('hero');
 
+  const isClickScrollingRef = useRef(false);
+  const clickTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // 1. Scroll background check & user manual scroll release
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 20) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
-      }
+      setIsScrolled(window.scrollY > 20);
+    };
 
-      // Track active section for highlight
-      const sections = ['hero', 'pipeline', 'services', 'materials', 'technology', 'portfolio', 'quote'];
-      const scrollPosition = window.scrollY + 200;
-
-      for (const section of sections) {
-        const el = document.getElementById(section);
-        if (el) {
-          const top = el.offsetTop;
-          const height = el.offsetHeight;
-          if (scrollPosition >= top && scrollPosition < top + height) {
-            setActiveSection(section);
-            break;
-          }
-        }
+    const handleUserInteraction = () => {
+      if (isClickScrollingRef.current) {
+        isClickScrollingRef.current = false;
+        if (clickTimerRef.current) clearTimeout(clickTimerRef.current);
       }
     };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('wheel', handleUserInteraction, { passive: true });
+    window.addEventListener('touchmove', handleUserInteraction, { passive: true });
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('wheel', handleUserInteraction);
+      window.removeEventListener('touchmove', handleUserInteraction);
+      if (clickTimerRef.current) clearTimeout(clickTimerRef.current);
+    };
   }, []);
+
+  // 2. IntersectionObserver for zero-blink active section tracking
+  useEffect(() => {
+    const sectionIds = ['hero', 'pipeline', 'services', 'materials', 'technology', 'industries', 'portfolio', 'process', 'quote'];
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (isClickScrollingRef.current) return;
+
+        const visibleEntries = entries.filter((entry) => entry.isIntersecting);
+        if (visibleEntries.length > 0) {
+          visibleEntries.sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+          const activeId = visibleEntries[0].target.id;
+          if (activeId) {
+            setActiveSection(activeId);
+          }
+        }
+      },
+      {
+        rootMargin: '-20% 0px -40% 0px',
+        threshold: [0.15, 0.4, 0.7],
+      }
+    );
+
+    sectionIds.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+    e.preventDefault();
+    setActiveSection(id);
+    setMobileMenuOpen(false);
+
+    isClickScrollingRef.current = true;
+    if (clickTimerRef.current) clearTimeout(clickTimerRef.current);
+    clickTimerRef.current = setTimeout(() => {
+      isClickScrollingRef.current = false;
+    }, 1200);
+
+    const el = document.getElementById(id);
+    if (el) {
+      const offsetTop = el.getBoundingClientRect().top + window.pageYOffset - 80;
+      window.scrollTo({
+        top: offsetTop,
+        behavior: 'smooth',
+      });
+    }
+  };
 
   const navLinks = [
     { name: 'PIPELINE', href: '#pipeline', id: 'pipeline' },
@@ -50,15 +101,19 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenQuoteModal }) => {
 
   return (
     <header
-      className={`sticky top-0 z-50 h-20 transition-all duration-300 ${
+      className={`sticky top-0 z-50 h-20 transition-colors duration-300 transform-gpu ${
         isScrolled
-          ? 'bg-industrial-950/85 backdrop-blur-md border-b border-cyan-500/20 shadow-lg shadow-cyan-950/20'
-          : 'bg-industrial-950/40 backdrop-blur-sm border-b border-white/5'
+          ? 'bg-industrial-950/90 backdrop-blur-md border-b border-cyan-500/20 shadow-lg shadow-cyan-950/20'
+          : 'bg-industrial-950/50 backdrop-blur-sm border-b border-white/5'
       }`}
     >
       <div className="max-w-7xl mx-auto h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between">
         {/* Brand Mark / Logo */}
-        <a href="#hero" className="flex items-center gap-3 group focus:outline-none">
+        <a 
+          href="#hero" 
+          onClick={(e) => handleNavClick(e, 'hero')} 
+          className="flex items-center gap-3 group focus:outline-none"
+        >
           <div className="relative w-10 h-10 rounded-lg bg-industrial-900 border border-cyan-500/40 flex items-center justify-center group-hover:border-cyan-400 group-hover:shadow-[0_0_15px_rgba(0,240,255,0.4)] transition-all">
             <Box className="w-5 h-5 text-cyan-400 group-hover:scale-110 transition-transform" />
             <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
@@ -85,10 +140,11 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenQuoteModal }) => {
               <a
                 key={link.id}
                 href={link.href}
-                className={`px-3.5 py-2 text-xs font-mono tracking-widest transition-all rounded-md relative ${
+                onClick={(e) => handleNavClick(e, link.id)}
+                className={`px-3.5 py-2 text-xs font-mono tracking-widest transition-colors duration-150 rounded-md relative outline-none focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 select-none ${
                   isActive
-                    ? 'text-cyan-400 font-semibold bg-cyan-500/10 border border-cyan-500/30'
-                    : 'text-slate-300 hover:text-slate-100 hover:bg-white/5'
+                    ? 'text-cyan-400 font-bold bg-cyan-500/15 border border-cyan-500/40 shadow-[0_0_12px_rgba(0,240,255,0.15)]'
+                    : 'text-slate-300 hover:text-white hover:bg-slate-800/60 border border-transparent hover:border-slate-700/50'
                 }`}
               >
                 {link.name}
@@ -110,7 +166,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenQuoteModal }) => {
           <a
             href="#quote"
             onClick={onOpenQuoteModal}
-            className="px-5 py-2.5 rounded-lg bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-400 hover:to-cyan-500 text-industrial-950 font-display font-bold text-xs tracking-wider uppercase transition-all shadow-[0_0_20px_rgba(0,240,255,0.3)] hover:shadow-[0_0_25px_rgba(0,240,255,0.5)] hover:scale-[1.02] flex items-center gap-2 group"
+            className="px-5 py-2.5 rounded-lg bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-400 hover:to-cyan-500 text-industrial-950 font-display font-bold text-xs tracking-wider uppercase transition-all shadow-[0_0_20px_rgba(0,240,255,0.3)] hover:shadow-[0_0_25px_rgba(0,240,255,0.5)] hover:scale-[1.02] active:scale-95 flex items-center gap-2 group outline-none focus:outline-none focus:ring-0"
           >
             <span>INSTANT QUOTE</span>
             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
@@ -121,7 +177,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenQuoteModal }) => {
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           aria-label="Toggle Navigation Menu"
-          className="md:hidden p-2 rounded-lg bg-industrial-900 border border-slate-800 text-slate-300 hover:text-cyan-400 hover:border-cyan-500/40 transition-all focus:outline-none"
+          className="md:hidden p-2 rounded-lg bg-industrial-900 border border-slate-800 text-slate-300 hover:text-cyan-400 hover:border-cyan-500/40 transition-all focus:outline-none focus:ring-0"
         >
           {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>
@@ -143,8 +199,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenQuoteModal }) => {
               <a
                 key={link.id}
                 href={link.href}
-                onClick={() => setMobileMenuOpen(false)}
-                className="px-4 py-3 rounded-lg text-sm font-mono tracking-wider text-slate-200 hover:text-cyan-400 hover:bg-cyan-500/10 hover:border hover:border-cyan-500/30 transition-all flex items-center justify-between"
+                onClick={(e) => handleNavClick(e, link.id)}
+                className="px-4 py-3 rounded-lg text-sm font-mono tracking-wider text-slate-200 hover:text-cyan-400 hover:bg-cyan-500/10 hover:border hover:border-cyan-500/30 transition-all flex items-center justify-between outline-none focus:outline-none focus:ring-0"
               >
                 <span>{link.name}</span>
                 <span className="text-xs text-slate-500 font-sans">→</span>

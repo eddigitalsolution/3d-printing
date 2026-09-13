@@ -10,6 +10,17 @@ export const SignatureInteraction: React.FC = () => {
   const [isAutoLoop, setIsAutoLoop] = useState(false);
   const [gcodeLine, setGcodeLine] = useState('G1 X124.52 Y88.19 Z12.45 E0.041');
 
+  // Auto reset progress on stage change & animate layer height during printing stage
+  useEffect(() => {
+    if (activeStage === 'printing') {
+      setLayerProgress(0.1);
+      const timer = setInterval(() => {
+        setLayerProgress((prev) => (prev >= 1.0 ? 0.1 : prev + 0.03));
+      }, 120);
+      return () => clearInterval(timer);
+    }
+  }, [activeStage]);
+
   // Auto pipeline stage looper
   useEffect(() => {
     if (!isAutoLoop) return;
@@ -19,7 +30,7 @@ export const SignatureInteraction: React.FC = () => {
         const nextIndex = (stages.indexOf(prev) + 1) % stages.length;
         return stages[nextIndex];
       });
-    }, 4500);
+    }, 6000);
     return () => clearInterval(interval);
   }, [isAutoLoop]);
 
@@ -31,7 +42,7 @@ export const SignatureInteraction: React.FC = () => {
       const z = (layerProgress * 180).toFixed(2);
       const e = (Math.random() * 0.08).toFixed(4);
       setGcodeLine(`G1 X${x} Y${y} Z${z} E${e}`);
-    }, 600);
+    }, 400);
     return () => clearInterval(interval);
   }, [layerProgress]);
 
@@ -103,9 +114,9 @@ export const SignatureInteraction: React.FC = () => {
               <button
                 key={stg.id}
                 onClick={() => setActiveStage(stg.id)}
-                className={`p-4 rounded-xl text-left transition-all relative overflow-hidden group focus:outline-none ${
+                className={`p-4 rounded-xl text-left transition-all duration-300 active:scale-95 relative overflow-hidden group focus:outline-none ${
                   isActive
-                    ? 'bg-industrial-950 border-2 border-cyan-400 shadow-[0_0_25px_rgba(0,240,255,0.2)]'
+                    ? 'bg-industrial-950 border-2 border-cyan-400 shadow-[0_0_25px_rgba(0,240,255,0.25)]'
                     : 'bg-industrial-950/60 border border-slate-800 hover:border-slate-700 hover:bg-industrial-950'
                 }`}
               >
@@ -114,7 +125,7 @@ export const SignatureInteraction: React.FC = () => {
                     0{index + 1}
                   </span>
                   <div
-                    className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300 ${
                       isActive ? 'bg-cyan-500/20 text-cyan-400' : 'bg-industrial-900 text-slate-400 group-hover:text-slate-200'
                     }`}
                   >
@@ -128,7 +139,7 @@ export const SignatureInteraction: React.FC = () => {
 
                 {/* Bottom Active Progress Line */}
                 {isActive && (
-                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-500 to-cyan-400" />
+                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-500 to-cyan-400 animate-fadeIn" />
                 )}
               </button>
             );
@@ -150,7 +161,7 @@ export const SignatureInteraction: React.FC = () => {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setIsAutoLoop(!isAutoLoop)}
-                  className={`px-3 py-1.5 rounded-md text-xs font-mono flex items-center gap-1.5 transition-all ${
+                  className={`px-3 py-1.5 rounded-md text-xs font-mono flex items-center gap-1.5 transition-all duration-200 active:scale-95 ${
                     isAutoLoop
                       ? 'bg-amber-500/20 border border-amber-500/40 text-amber-400'
                       : 'bg-industrial-900 border border-slate-800 text-slate-300 hover:text-white'
@@ -169,9 +180,9 @@ export const SignatureInteraction: React.FC = () => {
                     <button
                       key={mat}
                       onClick={() => setMaterial(mat)}
-                      className={`px-2.5 py-1 rounded text-[11px] uppercase transition-all ${
+                      className={`px-2.5 py-1 rounded text-[11px] uppercase transition-all duration-200 active:scale-95 ${
                         material === mat
-                          ? 'bg-cyan-500 text-industrial-950 font-bold'
+                          ? 'bg-cyan-500 text-industrial-950 font-bold shadow-[0_0_10px_rgba(0,240,255,0.3)]'
                           : 'text-slate-400 hover:text-slate-200'
                       }`}
                     >
@@ -224,19 +235,22 @@ export const SignatureInteraction: React.FC = () => {
               {(activeStage === 'printing' || activeStage === 'slicing') && (
                 <div className="mt-6 p-4 rounded-xl bg-industrial-900/60 border border-cyan-500/20">
                   <div className="flex justify-between items-center text-xs font-mono mb-2">
-                    <span className="text-slate-300 flex items-center gap-1.5">
+                    <label htmlFor="pipeline-layer-height-range" className="text-slate-300 flex items-center gap-1.5 cursor-pointer">
                       <Layers className="w-3.5 h-3.5 text-cyan-400" />
                       BUILD LAYER HEIGHT:
-                    </span>
+                    </label>
                     <span className="text-cyan-400 font-bold">{(layerProgress * 100).toFixed(0)}%</span>
                   </div>
                   <input
+                    id="pipeline-layer-height-range"
+                    name="layerHeightProgress"
                     type="range"
                     min="0.1"
                     max="1.0"
                     step="0.01"
                     value={layerProgress}
                     onChange={(e) => setLayerProgress(parseFloat(e.target.value))}
+                    aria-label="Build Layer Height Percentage"
                     className="w-full h-2 bg-industrial-800 rounded-lg appearance-none cursor-pointer accent-cyan-400"
                   />
                 </div>

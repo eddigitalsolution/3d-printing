@@ -37,21 +37,13 @@ export const PipelineStage: React.FC<PipelineStageProps> = ({
         <pointLight position={[0, 4, 0]} intensity={stage === 'printing' ? 3 : 1} color={stage === 'printing' ? '#ff6b00' : '#00f0ff'} />
 
         <Suspense fallback={null}>
-          {enableFloat && stage !== 'printing' ? (
-            <Float speed={1.5} rotationIntensity={0.2} floatIntensity={0.3}>
-              <IndustrialModel
-                stage={stage}
-                layerHeightProgress={layerHeightProgress}
-                materialType={materialType}
-              />
-            </Float>
-          ) : (
+          <Float speed={enableFloat && stage !== 'printing' ? 1.5 : 0} rotationIntensity={0.2} floatIntensity={0.3}>
             <IndustrialModel
               stage={stage}
               layerHeightProgress={layerHeightProgress}
               materialType={materialType}
             />
-          )}
+          </Float>
         </Suspense>
 
         {/* User Interactive OrbitControls */}

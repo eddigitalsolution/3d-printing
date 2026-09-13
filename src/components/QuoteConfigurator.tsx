@@ -69,9 +69,12 @@ export const QuoteConfigurator: React.FC = () => {
             {/* 1. CAD Upload Dropzone */}
             <div className="p-8 rounded-2xl bg-industrial-900/80 border-2 border-dashed border-cyan-500/30 hover:border-cyan-400 transition-all text-center relative group">
               <input
+                id="cad-file-input"
+                name="cadFileInput"
                 type="file"
                 accept=".step,.stl,.obj,.igs,.x_t"
                 onChange={handleSimulatedUpload}
+                aria-label="Upload 3D CAD File"
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
               />
               <div className="flex flex-col items-center justify-center space-y-3 pointer-events-none">
@@ -110,12 +113,15 @@ export const QuoteConfigurator: React.FC = () => {
 
               {/* Material Dropdown */}
               <div>
-                <label className="block font-mono text-xs text-slate-400 uppercase mb-2">
+                <label htmlFor="material-select" className="block font-mono text-xs text-slate-400 uppercase mb-2">
                   SELECT MATERIAL ALLOY
                 </label>
                 <select
+                  id="material-select"
+                  name="selectedMaterial"
                   value={selectedMaterial}
                   onChange={(e) => setSelectedMaterial(e.target.value)}
+                  aria-label="Select Material Alloy"
                   className="w-full p-3.5 rounded-xl bg-industrial-950 border border-slate-800 text-slate-200 font-mono text-sm focus:border-cyan-400 focus:outline-none"
                 >
                   {Object.keys(materialPrices).map((mat) => (
@@ -129,16 +135,19 @@ export const QuoteConfigurator: React.FC = () => {
               {/* Infill Percentage Slider */}
               <div>
                 <div className="flex justify-between text-xs font-mono mb-2">
-                  <span className="text-slate-400">INFILL DENSITY / SOLIDITY:</span>
+                  <label htmlFor="infill-density-range" className="text-slate-400">INFILL DENSITY / SOLIDITY:</label>
                   <span className="text-cyan-400 font-bold">{infill}% SOLID</span>
                 </div>
                 <input
+                  id="infill-density-range"
+                  name="infillDensity"
                   type="range"
                   min="20"
                   max="100"
                   step="5"
                   value={infill}
                   onChange={(e) => setInfill(parseInt(e.target.value))}
+                  aria-label="Infill Density Percentage"
                   className="w-full h-2 bg-industrial-950 rounded-lg appearance-none cursor-pointer accent-cyan-400"
                 />
               </div>
@@ -146,22 +155,28 @@ export const QuoteConfigurator: React.FC = () => {
               {/* Quantity & Surface Finish */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block font-mono text-xs text-slate-400 uppercase mb-2">QUANTITY (UNITS)</label>
+                  <label htmlFor="quantity-input" className="block font-mono text-xs text-slate-400 uppercase mb-2">QUANTITY (UNITS)</label>
                   <input
+                    id="quantity-input"
+                    name="quantity"
                     type="number"
                     min="1"
                     max="1000"
                     value={quantity}
                     onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                    aria-label="Part Quantity"
                     className="w-full p-3.5 rounded-xl bg-industrial-950 border border-slate-800 text-slate-200 font-mono text-sm focus:border-cyan-400 focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-mono text-xs text-slate-400 uppercase mb-2">POST-FINISH TYPE</label>
+                  <label htmlFor="finish-select" className="block font-mono text-xs text-slate-400 uppercase mb-2">POST-FINISH TYPE</label>
                   <select
+                    id="finish-select"
+                    name="postFinish"
                     value={finish}
                     onChange={(e) => setFinish(e.target.value)}
+                    aria-label="Post-Finish Type"
                     className="w-full p-3.5 rounded-xl bg-industrial-950 border border-slate-800 text-slate-200 font-mono text-sm focus:border-cyan-400 focus:outline-none"
                   >
                     <option value="As-Printed Standard">As-Printed Standard (Ra 3.2µm)</option>
@@ -227,14 +242,20 @@ export const QuoteConfigurator: React.FC = () => {
                   </p>
                 </div>
               ) : (
-                <form onSubmit={handleSubmit} className="mt-8 space-y-4">
+                <form id="dfm-quote-form" name="dfmQuoteForm" onSubmit={handleSubmit} className="mt-8 space-y-4">
                   <input
+                    id="engineer-email-input"
+                    name="engineerEmail"
                     type="email"
                     required
+                    autoComplete="email"
                     placeholder="Enter your engineer work email"
+                    aria-label="Engineer Work Email"
                     className="w-full p-3.5 rounded-xl bg-industrial-900 border border-slate-800 text-slate-200 font-mono text-xs focus:border-cyan-400 focus:outline-none"
                   />
                   <button
+                    id="quote-submit-btn"
+                    name="quoteSubmitBtn"
                     type="submit"
                     className="w-full py-4 rounded-xl bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-400 hover:to-cyan-500 text-industrial-950 font-display font-extrabold text-xs tracking-wider uppercase transition-all shadow-[0_0_25px_rgba(0,240,255,0.3)] hover:shadow-[0_0_35px_rgba(0,240,255,0.5)] flex items-center justify-center gap-2 group"
                   >

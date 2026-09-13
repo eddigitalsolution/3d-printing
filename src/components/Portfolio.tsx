@@ -27,7 +27,7 @@ export const Portfolio: React.FC = () => {
       buildTime: '14 Hours',
       description: 'Generatively optimized turbine impeller designed for high-pressure cryogenic propellant pumps.',
       wireframeColor: '#00f0ff',
-      image: '/images/portfolio/turbine-impeller.jpg',
+      image: '/images/portfolio/aerospace-impeller.jpg',
       svgType: 'impeller',
     },
     {
@@ -40,7 +40,7 @@ export const Portfolio: React.FC = () => {
       buildTime: '9 Hours',
       description: 'Ultra-lightweight engine air intake plenum with smooth internal fluidic wall curvature.',
       wireframeColor: '#ff6b00',
-      image: 'https://images.unsplash.com/photo-1617788138017-80ad40651399?auto=format&fit=crop&w=800&q=80',
+      image: '/images/portfolio/f1-intake-manifold.jpg',
       svgType: 'manifold',
     },
     {
@@ -53,7 +53,7 @@ export const Portfolio: React.FC = () => {
       buildTime: '3 Hours',
       description: 'Patient-specific bio-compatible spinal cage with engineered 60% porosity for natural bone ingrowth.',
       wireframeColor: '#38bdf8',
-      image: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=800&q=80',
+      image: '/images/portfolio/porous-spinal-implant.jpg',
       svgType: 'medical',
     },
     {
@@ -66,7 +66,7 @@ export const Portfolio: React.FC = () => {
       buildTime: '2.5 Hours',
       description: 'Lab-on-a-chip diagnostic array with 150µm internal fluid conduits polished to optical clarity.',
       wireframeColor: '#00f0ff',
-      image: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80',
+      image: '/images/portfolio/microfluidic-chip.jpg',
       svgType: 'microfluidic',
     },
     {
@@ -79,7 +79,7 @@ export const Portfolio: React.FC = () => {
       buildTime: '22 Hours',
       description: 'Heavy-duty automotive assembly end-effector containing internal spiral water-cooling lines.',
       wireframeColor: '#fbbf24',
-      image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
+      image: '/images/portfolio/robot-gripper.jpg',
       svgType: 'gripper',
     },
     {
@@ -92,7 +92,7 @@ export const Portfolio: React.FC = () => {
       buildTime: '7.5 Hours',
       description: 'Single-piece unibody drone chassis integrating motor mounts, battery bay, and antenna ports.',
       wireframeColor: '#ff6b00',
-      image: 'https://images.unsplash.com/photo-1508614589041-895b88991e3e?auto=format&fit=crop&w=800&q=80',
+      image: '/images/portfolio/drone-frame.jpg',
       svgType: 'drone',
     },
   ];
@@ -106,6 +106,18 @@ export const Portfolio: React.FC = () => {
 
   const renderCADGraphic = (type: PortfolioItem['svgType'], color: string) => {
     switch (type) {
+      case 'impeller':
+        return (
+          <svg className="w-28 h-28 text-cyan-400 group-hover:scale-110 transition-transform duration-500" viewBox="0 0 100 100" fill="none" stroke="currentColor">
+            <circle cx="50" cy="50" r="40" strokeWidth="1.5" strokeDasharray="3 3" />
+            <circle cx="50" cy="50" r="12" strokeWidth="2" fill="#0f172a" />
+            <path d="M50 10 C65 25, 65 35, 50 38" strokeWidth="2" strokeLinecap="round" />
+            <path d="M90 50 C75 65, 65 65, 62 50" strokeWidth="2" strokeLinecap="round" />
+            <path d="M50 90 C35 75, 35 65, 50 62" strokeWidth="2" strokeLinecap="round" />
+            <path d="M10 50 C25 35, 35 35, 38 50" strokeWidth="2" strokeLinecap="round" />
+            <circle cx="50" cy="50" r="4" fill="#00f0ff" className="animate-ping" />
+          </svg>
+        );
       case 'manifold':
         return (
           <svg className="w-28 h-28 text-orange-500/90 group-hover:scale-110 transition-transform duration-500" viewBox="0 0 100 100" fill="none" stroke="currentColor">
